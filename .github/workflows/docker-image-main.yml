@@ -42,8 +42,8 @@ jobs:
         with:
           images: registry.cn-hangzhou.aliyuncs.com/awesome2022/newapi
           tags: |
-            type=raw,value=newapi
-            type=raw,value=newapi-{{date 'YYYYMMDD'}}-{{sha}}
+            type=raw,value=latest
+            type=raw,value={{date 'YYYYMMDD'}}-{{sha}}
 
       - name: Build and push Docker images
         uses: docker/build-push-action@v5
