@@ -153,6 +153,7 @@ const TokensTable = () => {
                 shape='circle'
               >
                 {renderQuota(parseInt(text))}
+                {(record.quota_reset !== 'never' && !!record.quota_reset ? '/' : '') + (record.quota_reset === 'hour' ? '小时' : record.quota_reset === 'day' ? '天' : record.quota_reset === 'week' ? '周' : record.quota_reset === 'month' ? '月' : record.quota_reset === 'year' ? '年' : '')}
               </Tag>
             )}
           </div>

@@ -47,12 +47,20 @@ const EditToken = (props) => {
     remain_quota: 500000,
     expired_time: -1,
     unlimited_quota: false,
+    quota_reset: -1,
     model_limits_enabled: false,
     model_limits: [],
     allow_ips: '',
     group: '',
     tokenCount: 1,
   });
+
+  const optionsDataQuotaReset = [
+    { key: 'never', label: t('不重置'), value: 'never' },
+    { key: 'hour', label: t('小时'), value: 'hour' },
+    { key: 'day', label: t('天'), value: 'day' },
+    { key: 'week', label: t('周'), value: 'week' },
+  ];
 
   const handleCancel = () => {
     props.handleClose();
@@ -411,7 +419,7 @@ const EditToken = (props) => {
                   </div>
                 </div>
                 <Row gutter={12}>
-                  <Col span={24}>
+                  <Col xs={24} sm={24} md={24} lg={10} xl={10}>
                     <Form.AutoComplete
                       field='remain_quota'
                       label={t('额度')}
@@ -430,6 +438,15 @@ const EditToken = (props) => {
                       ]}
                     />
                   </Col>
+                  {values.unlimited_quota ? null : (<Col xs={24} sm={24} md={24} lg={14} xl={14}>
+                    <Form.Select
+                      label={t('额度重置频率')}
+                      optionList={optionsDataQuotaReset}
+                      field={'quota_reset'}
+                      placeholder={t('额度重置频率')}
+                      style={{ width: 180 }}
+                    />
+                  </Col>)}
                   <Col span={24}>
                     <Form.Switch
                       field='unlimited_quota'

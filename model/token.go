@@ -21,6 +21,7 @@ type Token struct {
 	ExpiredTime        int64          `json:"expired_time" gorm:"bigint;default:-1"` // -1 means never expired
 	RemainQuota        int            `json:"remain_quota" gorm:"default:0"`
 	UnlimitedQuota     bool           `json:"unlimited_quota" gorm:"default:false"`
+	QuotaReset         string         `json:"quota_reset" gorm:"type:varchar(20);default:'never'"`
 	ModelLimitsEnabled bool           `json:"model_limits_enabled" gorm:"default:false"`
 	ModelLimits        string         `json:"model_limits" gorm:"type:varchar(1024);default:''"`
 	AllowIps           *string        `json:"allow_ips" gorm:"default:''"`
@@ -183,7 +184,7 @@ func (token *Token) Update() (err error) {
 			})
 		}
 	}()
-	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota",
+	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "quota_reset",
 		"model_limits_enabled", "model_limits", "allow_ips", "group").Updates(token).Error
 	return err
 }
