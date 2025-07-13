@@ -37,6 +37,8 @@ const routerMap = {
 const SiderBar = () => {
   const { t } = useTranslation();
   const { state: styleState, dispatch: styleDispatch } = useStyle();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isTokenUser = user.isTokenUser === true;
 
   const [selectedKeys, setSelectedKeys] = useState(['home']);
   const [isCollapsed, setIsCollapsed] = useState(styleState.siderCollapsed);
@@ -382,12 +384,14 @@ const SiderBar = () => {
         }}
       >
         {/* 聊天区域 */}
-        <div className="sidebar-section">
-          {!isCollapsed && (
-            <div className="sidebar-group-label">{t('聊天')}</div>
-          )}
-          {chatMenuItems.map((item) => renderSubItem(item))}
-        </div>
+        {!isTokenUser && (
+          <div className="sidebar-section">
+            {!isCollapsed && (
+              <div className="sidebar-group-label">{t('聊天')}</div>
+            )}
+            {chatMenuItems.map((item) => renderSubItem(item))}
+          </div>
+        )}
 
         {/* 控制台区域 */}
         <Divider className="sidebar-divider" />
@@ -395,11 +399,15 @@ const SiderBar = () => {
           {!isCollapsed && (
             <div className="sidebar-group-label">{t('控制台')}</div>
           )}
-          {workspaceItems.map((item) => renderNavItem(item))}
+          {workspaceItems.map((item) => {
+            if (!isTokenUser || item.itemKey !== 'token') {
+              return renderNavItem(item);
+            }
+          })}
         </div>
 
         {/* 管理员区域 - 只在管理员时显示 */}
-        {isAdmin() && (
+        {!isTokenUser && isAdmin() && (
           <>
             <Divider className="sidebar-divider" />
             <div>
@@ -412,13 +420,17 @@ const SiderBar = () => {
         )}
 
         {/* 个人中心区域 */}
-        <Divider className="sidebar-divider" />
-        <div>
-          {!isCollapsed && (
-            <div className="sidebar-group-label">{t('个人中心')}</div>
-          )}
-          {financeItems.map((item) => renderNavItem(item))}
-        </div>
+        {!isTokenUser && (
+          <>
+            <Divider className="sidebar-divider" />
+            <div>
+              {!isCollapsed && (
+                <div className="sidebar-group-label">{t('个人中心')}</div>
+              )}
+              {financeItems.map((item) => renderNavItem(item))}
+            </div>
+          </>
+        )}
       </Nav>
 
       {/* 底部折叠按钮 */}

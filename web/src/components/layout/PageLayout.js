@@ -7,17 +7,18 @@ import { ToastContainer } from 'react-toastify';
 import React, { useContext, useEffect } from 'react';
 import { useStyle } from '../../context/Style/index.js';
 import { useTranslation } from 'react-i18next';
-import { API, getLogo, getSystemName, showError, setStatusData } from '../../helpers/index.js';
+import { API, getLogo, getSystemName, showError, showSuccess, updateAPI, setUserData, setStatusData } from '../../helpers/index.js';
 import { UserContext } from '../../context/User/index.js';
 import { StatusContext } from '../../context/Status/index.js';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 const { Sider, Content, Header } = Layout;
 
 const PageLayout = () => {
   const [userState, userDispatch] = useContext(UserContext);
   const [statusState, statusDispatch] = useContext(StatusContext);
   const { state: styleState } = useStyle();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
+  let navigate = useNavigate();
   const location = useLocation();
 
   const shouldHideFooter = location.pathname === '/console/playground' || location.pathname.startsWith('/console/chat');
@@ -25,6 +26,29 @@ const PageLayout = () => {
   const shouldInnerPadding = location.pathname.includes('/console') &&
     !location.pathname.startsWith('/console/chat') &&
     location.pathname !== '/console/playground';
+
+  const autoTokenLogin = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const key = urlParams.get('key');
+    if (key && key.startsWith('sk-')) {
+      const res1 = await API.post(
+        `/api/user/token/login`,
+        {
+          token: key,
+        },
+      );
+      const { success, message, data } = res1.data;
+      if (success) {
+        userDispatch({ type: 'login', payload: data });
+        setUserData(data);
+        updateAPI();
+        showSuccess(t('登录成功！'));
+        navigate('/console');
+      } else {
+        showError(message);
+      }
+    }
+  }
 
   const loadUser = () => {
     let user = localStorage.getItem('user');
@@ -50,6 +74,11 @@ const PageLayout = () => {
   };
 
   useEffect(() => {
+    const judgeTokenLogin = async () => {
+      await autoTokenLogin();
+    };
+    judgeTokenLogin();
+
     loadUser();
     loadStatus().catch(console.error);
     let systemName = getSystemName();

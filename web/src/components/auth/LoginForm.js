@@ -22,12 +22,14 @@ import {
   Form,
   Icon,
   Modal,
+  RadioGroup,
+  Radio
 } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import TelegramLoginButton from 'react-telegram-login';
 
-import { IconGithubLogo, IconMail, IconLock } from '@douyinfe/semi-icons';
+import { IconGithubLogo, IconMail, IconLock, IconKey, IconArrowRight } from '@douyinfe/semi-icons';
 import OIDCIcon from '../common/logo/OIDCIcon.js';
 import WeChatIcon from '../common/logo/WeChatIcon.js';
 import LinuxDoIcon from '../common/logo/LinuxDoIcon.js';
@@ -39,9 +41,11 @@ const LoginForm = () => {
   const [inputs, setInputs] = useState({
     username: '',
     password: '',
+    token: '',
     wechat_verification_code: '',
+    loginType: 1,
   });
-  const { username, password } = inputs;
+  const { username, password, token, loginType } = inputs;
   const [searchParams, setSearchParams] = useSearchParams();
   const [submitted, setSubmitted] = useState(false);
   const [userState, userDispatch] = useContext(UserContext);
@@ -109,13 +113,13 @@ const LoginForm = () => {
         setUserData(data);
         updateAPI();
         navigate('/');
-        showSuccess('登录成功！');
+        showSuccess(t('登录成功！'));
         setShowWeChatLoginModal(false);
       } else {
         showError(message);
       }
     } catch (error) {
-      showError('登录失败，请重试');
+      showError(t('登录失败，请重试'));
     } finally {
       setWechatCodeSubmitLoading(false);
     }
@@ -132,37 +136,62 @@ const LoginForm = () => {
     }
     setSubmitted(true);
     setLoginLoading(true);
+
     try {
-      if (username && password) {
-        const res = await API.post(
-          `/api/user/login?turnstile=${turnstileToken}`,
-          {
-            username,
-            password,
-          },
-        );
-        const { success, message, data } = res.data;
-        if (success) {
-          userDispatch({ type: 'login', payload: data });
-          setUserData(data);
-          updateAPI();
-          showSuccess('登录成功！');
-          if (username === 'root' && password === '123456') {
-            Modal.error({
-              title: '您正在使用默认密码！',
-              content: '请立刻修改默认密码！',
-              centered: true,
-            });
+      if (loginType === 1) {
+        if (username && password) {
+          const res = await API.post(
+            `/api/user/login?turnstile=${turnstileToken}`,
+            {
+              username,
+              password,
+            },
+          );
+          const { success, message, data } = res.data;
+          if (success) {
+            userDispatch({ type: 'login', payload: data });
+            setUserData(data);
+            updateAPI();
+            showSuccess(t('登录成功！'));
+            if (username === 'root' && password === '123456') {
+              Modal.error({
+                title: '您正在使用默认密码！',
+                content: '请立刻修改默认密码！',
+                centered: true,
+              });
+            }
+            navigate('/console');
+          } else {
+            showError(message);
           }
-          navigate('/console');
         } else {
-          showError(message);
+          showError('请输入用户名和密码！');
         }
-      } else {
-        showError('请输入用户名和密码！');
+      }
+      else {
+        if (token) {
+          const res1 = await API.post(
+            `/api/user/token/login?turnstile=${turnstileToken}`,
+            {
+              token,
+            },
+          );
+          const { success, message, data } = res1.data;
+          if (success) {
+            userDispatch({ type: 'login', payload: data });
+            setUserData(data);
+            updateAPI();
+            showSuccess(t('登录成功！'));
+            navigate('/console');
+          } else {
+            showError(message);
+          }
+        } else {
+          showError('请输入API令牌！');
+        }
       }
     } catch (error) {
-      showError('登录失败，请重试');
+      showError(t('登录失败，请重试'));
     } finally {
       setLoginLoading(false);
     }
@@ -192,7 +221,7 @@ const LoginForm = () => {
       if (success) {
         userDispatch({ type: 'login', payload: data });
         localStorage.setItem('user', JSON.stringify(data));
-        showSuccess('登录成功！');
+        showSuccess(t('登录成功！'));
         setUserData(data);
         updateAPI();
         navigate('/');
@@ -200,7 +229,7 @@ const LoginForm = () => {
         showError(message);
       }
     } catch (error) {
-      showError('登录失败，请重试');
+      showError(t('登录失败，请重试'));
     }
   };
 
@@ -389,55 +418,98 @@ const LoginForm = () => {
 
           <Card className="shadow-xl border-0 !rounded-2xl overflow-hidden">
             <div className="flex justify-center pt-6 pb-2">
-              <Title heading={3} className="text-gray-800 dark:text-gray-200">{t('登 录')}</Title>
+              <RadioGroup type='button' buttonSize='large' value={loginType} onChange={(e) => handleChange('loginType', e.target.value)} aria-label="">
+                <Radio value={1}>
+                  登 录
+                </Radio>
+                <Radio value={2}>
+                  令牌登录
+                </Radio>
+              </RadioGroup>
             </div>
             <div className="px-2 py-8">
               <Form className="space-y-3">
-                <Form.Input
-                  field="username"
-                  label={t('用户名或邮箱')}
-                  placeholder={t('请输入您的用户名或邮箱地址')}
-                  name="username"
-                  size="large"
-                  onChange={(value) => handleChange('username', value)}
-                  prefix={<IconMail />}
-                />
+                {() => (
+                  <React.Fragment>
+                    {loginType === 1 ? (
+                      <Form.Input
+                        field="username"
+                        label={t('用户名或邮箱')}
+                        placeholder={t('请输入您的用户名或邮箱地址')}
+                        name="username"
+                        size="large"
+                        onChange={(value) => handleChange('username', value)}
+                        prefix={<IconMail />}
+                      />
+                    ) : null}
+                    {loginType === 1 ? (
+                      <Form.Input
+                        field="password"
+                        label={t('密码')}
+                        placeholder={t('请输入您的密码')}
+                        name="password"
+                        mode="password"
+                        size="large"
+                        onChange={(value) => handleChange('password', value)}
+                        prefix={<IconLock />}
+                      />
+                    ) : null}
+                    {loginType === 2 ? (
+                      <Form.Input
+                        field="token"
+                        label={t('API令牌')}
+                        placeholder={t('请输入您的API令牌')}
+                        size="large"
+                        value={token}
+                        onChange={(value) => handleChange('token', value)}
+                        prefix={<IconKey />}
+                      />
+                    ) : null}
 
-                <Form.Input
-                  field="password"
-                  label={t('密码')}
-                  placeholder={t('请输入您的密码')}
-                  name="password"
-                  mode="password"
-                  size="large"
-                  onChange={(value) => handleChange('password', value)}
-                  prefix={<IconLock />}
-                />
+                    <div className="space-y-2 pt-2">
+                      <Button
+                        theme="solid"
+                        className="w-full !rounded-full"
+                        type="primary"
+                        htmlType="submit"
+                        size="large"
+                        onClick={handleSubmit}
+                        loading={loginLoading}
+                      >
+                        {t('继续')}
+                      </Button>
 
-                <div className="space-y-2 pt-2">
-                  <Button
-                    theme="solid"
-                    className="w-full !rounded-full"
-                    type="primary"
-                    htmlType="submit"
-                    size="large"
-                    onClick={handleSubmit}
-                    loading={loginLoading}
-                  >
-                    {t('继续')}
-                  </Button>
+                      {loginType === 1 ? (
+                        <Button
+                          theme="borderless"
+                          type='tertiary'
+                          className="w-full !rounded-full"
+                          size="large"
+                          onClick={handleResetPasswordClick}
+                          loading={resetPasswordLoading}
+                        >
+                          {t('忘记密码？')}
+                        </Button>
+                      ) : null}
 
-                  <Button
-                    theme="borderless"
-                    type='tertiary'
-                    className="w-full !rounded-full"
-                    size="large"
-                    onClick={handleResetPasswordClick}
-                    loading={resetPasswordLoading}
-                  >
-                    {t('忘记密码？')}
-                  </Button>
-                </div>
+                      {loginType === 2 ? (
+                        <Button
+                          theme="borderless"
+                          type='tertiary'
+                          className="w-full !rounded-full"
+                          size="large"
+                          icon={<IconArrowRight size='small' />}
+                          iconPosition='right'
+                        // onClick={handleResetPasswordClick}
+                        // loading={resetPasswordLoading}
+                        >
+                          {t('兑换令牌')}
+                        </Button>
+                      ) : null}
+
+                    </div>
+                  </React.Fragment>
+                )}
               </Form>
 
               {(status.github_oauth || status.oidc_enabled || status.wechat_login || status.linuxdo_oauth || status.telegram_oauth) && (

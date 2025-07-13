@@ -28,6 +28,7 @@ func authHelper(c *gin.Context, minRole int) {
 	role := session.Get("role")
 	id := session.Get("id")
 	status := session.Get("status")
+	isTokenUser := session.Get("isTokenUser")
 	useAccessToken := false
 	if username == nil {
 		// Check access token
@@ -121,6 +122,7 @@ func authHelper(c *gin.Context, minRole int) {
 	c.Set("role", role)
 	c.Set("id", id)
 	c.Set("group", session.Get("group"))
+	c.Set("isTokenUser", isTokenUser)
 	c.Set("use_access_token", useAccessToken)
 	c.Next()
 }

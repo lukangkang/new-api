@@ -43,6 +43,7 @@ type User struct {
 	LinuxDOId        string         `json:"linux_do_id" gorm:"column:linux_do_id;index"`
 	Setting          string         `json:"setting" gorm:"type:text;column:setting"`
 	Remark           string         `json:"remark,omitempty" gorm:"type:varchar(255)" validate:"max=255"`
+	IsTokenUser      bool           `json:"isTokenUser"` // 非数据库字段，是否token登录用户
 }
 
 func (user *User) ToBaseUser() *UserBase {

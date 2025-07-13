@@ -73,6 +73,7 @@ func setupLogin(user *model.User, c *gin.Context) {
 	session.Set("role", user.Role)
 	session.Set("status", user.Status)
 	session.Set("group", user.Group)
+	session.Set("isTokenUser", user.IsTokenUser)
 	err := session.Save()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -88,12 +89,54 @@ func setupLogin(user *model.User, c *gin.Context) {
 		Role:        user.Role,
 		Status:      user.Status,
 		Group:       user.Group,
+		IsTokenUser: user.IsTokenUser,
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "",
 		"success": true,
 		"data":    cleanUser,
 	})
+}
+
+type TokenLoginRequest struct {
+	Token string `json:"token"`
+}
+
+func TokenLogin(c *gin.Context) {
+	var loginRequest TokenLoginRequest
+	err := json.NewDecoder(c.Request.Body).Decode(&loginRequest)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "无效的参数",
+			"success": false,
+		})
+		return
+	}
+	if loginRequest.Token != "" {
+		loginRequest.Token = strings.TrimPrefix(loginRequest.Token, "sk-")
+	}
+	// 验证令牌
+	token, err := model.ValidateUserToken(loginRequest.Token)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err.Error(),
+			"success": false,
+		})
+		return
+	}
+	// 获取用户信息
+	user, err := model.GetUserById(token.UserId, false)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "用户不存在",
+		})
+		return
+	}
+	// api令牌登录为访客权限
+	user.Role = common.RoleCommonUser
+	user.IsTokenUser = true
+	setupLogin(user, c)
 }
 
 func Logout(c *gin.Context) {
