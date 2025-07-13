@@ -3,6 +3,9 @@ name: Publish Docker image (main)
 on:
   workflow_dispatch:
     inputs:
+      commit_sha:
+        description: "要构建的 commit SHA（留空则为 main 最新）"
+        required: false
       name:
         description: "reason"
         required: false
