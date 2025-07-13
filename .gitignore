@@ -6,8 +6,8 @@ upload
 build
 *.db-journal
 logs
-web/dist
+#web/dist
 .env
-one-api
+#one-api
 .DS_Store
 tiktoken_cache
