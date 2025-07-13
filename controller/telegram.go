@@ -94,7 +94,7 @@ func TelegramLogin(c *gin.Context) {
 		})
 		return
 	}
-	setupLogin(&user, c)
+	setupLogin(&user, c, nil)
 }
 
 func checkTelegramAuthorization(params map[string][]string, token string) bool {

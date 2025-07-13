@@ -23,6 +23,13 @@ export function isRoot() {
   return user.role >= 100;
 }
 
+export function isTokenUser() {
+  let user = localStorage.getItem('user');
+  if (!user) return false;
+  user = JSON.parse(user);
+  return user.isTokenUser;
+}
+
 export function getSystemName() {
   let system_name = localStorage.getItem('system_name');
   if (!system_name) return 'New API';

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { UserContext } from '../../context/User/index.js';
 import { useSetTheme, useTheme } from '../../context/Theme/index.js';
 import { useTranslation } from 'react-i18next';
-import { API, getLogo, getSystemName, showSuccess, stringToColor } from '../../helpers/index.js';
+import { API, getLogo, getSystemName, showSuccess, stringToColor, isTokenUser } from '../../helpers/index.js';
 import fireworks from 'react-fireworks';
 import { CN, GB } from 'country-flag-icons/react/3x2';
 import NoticeModal from './NoticeModal.js';
@@ -281,6 +281,43 @@ const HeaderBar = () => {
     }
 
     if (userState.user) {
+      if (isTokenUser()) {
+        return (
+          <Dropdown
+            position="bottomRight"
+            render={
+              <Dropdown.Menu className="!bg-semi-color-bg-overlay !border-semi-color-border !shadow-lg !rounded-lg dark:!bg-gray-700 dark:!border-gray-600">
+                <Dropdown.Item onClick={logout} className="!px-3 !py-1.5 !text-sm !text-semi-color-text-0 hover:!bg-semi-color-fill-1 dark:!text-gray-200 dark:hover:!bg-red-500 dark:hover:!text-white">
+                  <div className="flex items-center gap-2">
+                    <IconExit size="small" className="text-gray-500 dark:text-gray-400" />
+                    <span>{t('退出')}</span>
+                  </div>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            }
+          >
+            <Button
+              theme="borderless"
+              type="tertiary"
+              className="flex items-center gap-1.5 !p-1 !rounded-full hover:!bg-semi-color-fill-1 dark:hover:!bg-gray-700 !bg-semi-color-fill-0 dark:!bg-semi-color-fill-1 dark:hover:!bg-semi-color-fill-2"
+            >
+              <Avatar
+                size="extra-small"
+                color={stringToColor(userState.user.username)}
+                className="mr-1"
+              >
+                令
+              </Avatar>
+              <span className="hidden md:inline">
+                <Typography.Text className="!text-xs !font-medium !text-semi-color-text-1 dark:!text-gray-300 mr-1">
+                  令牌登录
+                </Typography.Text>
+              </span>
+              <IconChevronDown className="text-xs text-semi-color-text-2 dark:text-gray-400" />
+            </Button>
+          </Dropdown>
+        )
+      }
       return (
         <Dropdown
           position="bottomRight"

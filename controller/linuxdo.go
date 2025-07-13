@@ -267,5 +267,5 @@ func LinuxdoOAuth(c *gin.Context) {
 		return
 	}
 
-	setupLogin(&user, c)
+	setupLogin(&user, c, nil)
 }

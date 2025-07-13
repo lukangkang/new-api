@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
 	"one-api/model"
 	"strconv"
 	"time"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 )
 
 type wechatLoginResponse struct {
@@ -116,7 +117,7 @@ func WeChatAuth(c *gin.Context) {
 		})
 		return
 	}
-	setupLogin(&user, c)
+	setupLogin(&user, c, nil)
 }
 
 func WeChatBind(c *gin.Context) {

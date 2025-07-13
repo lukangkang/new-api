@@ -65,7 +65,7 @@ func GetUserLogs(c *gin.Context) {
 	tokenName := c.Query("token_name")
 	modelName := c.Query("model_name")
 	group := c.Query("group")
-	logs, total, err := model.GetUserLogs(userId, logType, startTimestamp, endTimestamp, modelName, tokenName, (p-1)*pageSize, pageSize, group)
+	logs, total, err := model.GetUserLogs(c, userId, logType, startTimestamp, endTimestamp, modelName, tokenName, (p-1)*pageSize, pageSize, group)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

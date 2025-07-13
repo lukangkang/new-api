@@ -62,11 +62,11 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	setupLogin(&user, c)
+	setupLogin(&user, c, nil)
 }
 
 // setup session & cookies and then return user info
-func setupLogin(user *model.User, c *gin.Context) {
+func setupLogin(user *model.User, c *gin.Context, token *model.Token) {
 	session := sessions.Default(c)
 	session.Set("id", user.Id)
 	session.Set("username", user.Username)
@@ -74,6 +74,10 @@ func setupLogin(user *model.User, c *gin.Context) {
 	session.Set("status", user.Status)
 	session.Set("group", user.Group)
 	session.Set("isTokenUser", user.IsTokenUser)
+	if token != nil {
+		session.Set("tokenId", token.Id)
+		session.Set("tokenKey", token.Key)
+	}
 	err := session.Save()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -90,6 +94,10 @@ func setupLogin(user *model.User, c *gin.Context) {
 		Status:      user.Status,
 		Group:       user.Group,
 		IsTokenUser: user.IsTokenUser,
+	}
+	if token != nil {
+		cleanUser.TokenId = token.UserId
+		cleanUser.TokenKey = token.Key
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "",
@@ -136,7 +144,7 @@ func TokenLogin(c *gin.Context) {
 	// api令牌登录为访客权限
 	user.Role = common.RoleCommonUser
 	user.IsTokenUser = true
-	setupLogin(user, c)
+	setupLogin(user, c, token)
 }
 
 func Logout(c *gin.Context) {

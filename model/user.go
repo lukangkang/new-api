@@ -44,6 +44,8 @@ type User struct {
 	Setting          string         `json:"setting" gorm:"type:text;column:setting"`
 	Remark           string         `json:"remark,omitempty" gorm:"type:varchar(255)" validate:"max=255"`
 	IsTokenUser      bool           `json:"isTokenUser"` // 非数据库字段，是否token登录用户
+	TokenId          int            `json:"tokenId"`     // 非数据库字段，token用户的token_id
+	TokenKey         string         `json:"tokenKey"`    // 非数据库字段，token用户的token_key
 }
 
 func (user *User) ToBaseUser() *UserBase {
